@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My first Vue app</title>
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://d3js.org/d3.v4.js"></script> 
+
+</head>
+<body>
+  <div id="app-5">
+    <p>{{ graph_a() }}</p>
+    <p>{{ graph_b() }}</p>
+    <svg width="1000" height="300"></svg> 
+    <br>
+    <button v-on:click="show = !show">Show/Hide</button>
+    <br>
+    <select v-model="selected">
+        <option selected>Rect</option>
+        <option>Reverse_Rect</option>
+        <option>Pie</option>
+    </select>
+    <br>
+    <p v-for="i in form_rows.length">
+        <input v-model="form_rows[i-1]">
+    </p>
+    <p>    
+        <button v-on:click="add_rows()">Add</button>
+        <button v-on:click="del_rows()">Del</button>
+    </p>
+
+  </div>
+
+
+  <script>
+
+    var app5 = new Vue({
+        el: '#app-5',
+        data: {
+            show: 1,
+            selected: 'Rect',
+            form_rows: [],
+            col_rows:[]
+        },
+        methods: {
+            add_rows: function(){
+                var colorData="#" + Math.round(Math.random()*255).toString(16)+ Math.round(Math.random()*255).toString(16)+ Math.round(Math.random()*255).toString(16);
+                this.col_rows.push(colorData);
+                this.form_rows.push(0);
+            },
+            del_rows: function(){
+                this.form_rows.pop();
+                this.col_rows.pop();
+            },
+            graph_a: function(){
+                
+                d3.selectAll("rect").remove();
+                if(!this.show)
+                    return;
+
+                var data = this.form_rows;
+                var color = this.col_rows;
+                var svg = d3.select("svg");
+                if(this.selected == 'Reverse_Rect'){
+                    for(var i = 0; i < data.length; i++){
+                        d3.select("svg").append("rect").attr("height",data[i]).attr("width",40).attr("x",50*i).attr('fill',color[i]);
+                    }
+                }
+                if(this.selected == 'Rect'){
+                    for(var i = 0; i < data.length; i++){
+                        d3.select("svg").append("rect").attr("height",data[i]).attr("width",40).attr("x",50*i).attr("y", 300 - data[i]).attr('fill',color[i]);
+                        }
+                }
+            },
+            graph_b: function(){
+                d3.selectAll("path").remove();
+                if(!this.show)
+                    return;
+                if(this.selected != 'Pie')
+                    return;
+                
+                var color = this.col_rows;
+                var data = this.form_rows;
+                var pie = d3.pie();
+                var piedata = pie(data);
+
+                var svg = d3.select("svg");
+                var arc = d3.arc().innerRadius(50).outerRadius(100);
+                var g = svg.append('g').attr('transform','translate(100,100)');
+                g.selectAll('path.slice').data(piedata).enter().append('path').classed('slice', true).attr('d', arc).attr('fill', function(d,i){ return color[i]; });
+            }
+        }
+    })
+
+  </script>
+
+</body>
+</html>
